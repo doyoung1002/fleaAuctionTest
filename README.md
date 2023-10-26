@@ -47,3 +47,9 @@ react-native-vector-icons/MaterialIcons
 터미널에서 명령어 입력
 <br/> cd fleaAuctionTest
 <br/> expo start
+
+## 5. 테스트 영상
+
+https://github.com/doyoung1002/fleaAuctionTest/assets/127278402/ab24f28d-876c-4ca6-8b97-035533b91d25
+
+
