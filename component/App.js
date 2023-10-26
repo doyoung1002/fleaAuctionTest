@@ -9,14 +9,16 @@ export default function App() {
   const [auctions, setAuctions] = useState([]); // 상태 값 설정
   const [refreshing, setRefreshing] = useState(false);
 
+  const overlap = 5;
   const halfLength = Math.ceil(auctions.length / 2);
-  const topAuctions = auctions.slice(0, halfLength);
-  const bottomAuctions = auctions.slice(halfLength);
+  const topAuctions = auctions.slice(0, halfLength + overlap);
+  const bottomAuctions = auctions.slice(halfLength - overlap);
 
   const isAuctionIdInBoth = (auctionId) => {
     return topAuctions.some(a => a.auctionId === auctionId) && bottomAuctions.some(a => a.auctionId === auctionId);
   };
 
+  let es;
 
   const loadData = () => {
     const es = new EventSource('https://api.fleaauction.world/v2/sse/event');
@@ -29,7 +31,15 @@ export default function App() {
       };
 
       setAuctions(prevAuctions => {
-        if (prevAuctions.length < 20) {
+        const existingAuctionIndex = prevAuctions.findIndex(a => a.auctionId === auctionData.auctionId);
+
+        if (existingAuctionIndex !== -1) {
+          const updatedAuctions = [...prevAuctions];
+          updatedAuctions[existingAuctionIndex].viewCount = auctionData.viewCount;
+          return updatedAuctions;
+        }
+
+        else if (prevAuctions.length < 40) {
           return [...prevAuctions, auctionData];
         } else {
           es.close();
@@ -44,10 +54,10 @@ export default function App() {
   };
 
   useEffect(() => {
-    const cleanup = loadData(); // loadData 함수에서 반환된 cleanup 함수를 저장합니다.
+    loadData();
 
     return () => {
-      cleanup(); // 컴포넌트가 언마운트되거나 useEffect가 다시 실행될 때 cleanup 함수를 호출합니다.
+      if (es) es.close();
     };
   }, []);
 
@@ -59,15 +69,14 @@ export default function App() {
     return array;
   }
 
-
   const onRefresh = () => {
     setRefreshing(true);
     setAuctions([]);
-    const cleanup = loadData(); // loadData 함수에서 반환된 cleanup 함수를 저장합니다.
+    const cleanup = loadData();
     setRefreshing(false);
 
     return () => {
-      cleanup(); // loadData 함수의 이벤트 리스너를 닫습니다.
+      cleanup();
     };
   };
 
@@ -83,8 +92,8 @@ export default function App() {
           onRefresh={onRefresh}
         />
       }>
-        {topAuctions.map((auction, index) => (
-          <View key={index} style={styles.picture}>
+        {topAuctions.map((auction) => (
+          <View key={auction.auctionId} style={styles.picture}>
             <Text style={styles.auctionNumber}>작품ID({auction.auctionId})</Text>
             {isAuctionIdInBoth(auction.auctionId) && (
               <Text style={styles.viewNumber}>조회수: {auction.viewCount}</Text>
@@ -99,8 +108,8 @@ export default function App() {
           onRefresh={onRefresh}
         />
       }>
-        {bottomAuctions.map((auction, index) => (
-          <View key={index} style={styles.picture}>
+        {bottomAuctions.map((auction) => (
+          <View key={auction.auctionId} style={styles.picture}>
             <Text style={styles.auctionNumber}>작품ID({auction.auctionId})</Text>
             {isAuctionIdInBoth(auction.auctionId) && (
               <Text style={styles.viewNumber}>조회수: {auction.viewCount}</Text>
@@ -133,28 +142,33 @@ const styles = StyleSheet.create({
 
   pictureList: {
     flex: 1,
-    backgroundColor: 'yellow',
   },
 
   picture: {
     width: SCREEN_WIDTH,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 2,
+    borderRadius: 20,
+    borderColor: 'black',
+    marginTop: 5,
+    marginBottom: 5,
+
   },
 
   auctionNumber: {
-    fontSize: 50,
+    fontSize: 30,
     alignItems: 'center',
   },
 
   viewNumber: {
-    fontSize: 30,
+    fontSize: 15,
     alignItems: 'center',
   },
 
   paintingSecond: {
     flex: 1,
-    backgroundColor: 'grey',
+
   },
 
   footer: {
