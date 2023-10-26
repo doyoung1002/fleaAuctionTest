@@ -50,6 +50,7 @@ react-native-vector-icons/MaterialIcons
 
 ## 5. 테스트 영상
 
-https://github.com/doyoung1002/fleaAuctionTest/assets/127278402/ab24f28d-876c-4ca6-8b97-035533b91d25
+https://github.com/doyoung1002/fleaAuctionTest/assets/127278402/0a931e40-0922-40aa-9836-9734ccb94b46
+
 
 
